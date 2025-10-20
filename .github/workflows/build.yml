@@ -1,3 +1,8 @@
+name: Debug build failure
+  if: failure()
+  run: |
+    make -j1 V=s package/kernel/mt76/compile 2>&1 | tail -100
+    
 name: Build and Release
 
 on:
