@@ -56,6 +56,7 @@ jobs:
       - name: Apply patches
         run: |
           git apply config_plugins.patch
+          git apply config2_plugins.patch
           git apply add_plugins.patch
       - name: Build
         run: |
