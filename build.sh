@@ -21,6 +21,20 @@ echo apply qmodem default setting
 cat feeds/qmodem/application/qmodem/files/etc/config/qmodem > files/etc/config/qmodem
 cat >> files/etc/config/qmodem << EOF
 
+# 添加 small-package feed
+echo "Inject small-package feed"
+echo "src-git small8 https://github.com/kenzok8/small-package" >> feeds.conf.default
+
+# 写入插件到配置文件
+echo "Add Tailscale / EasyTier / Lucky to xgp.config"
+CONFIG_FILE="../xgp.config"
+[ -f "$CONFIG_FILE" ] || touch "$CONFIG_FILE"
+for pkg in tailscale luci-app-tailscale luci-i18n-tailscale-zh-cn \
+           easytier luci-app-easytier luci-i18n-easytier-zh-cn \
+           lucky luci-app-lucky luci-i18n-lucky-zh-cn; do
+  grep -q "CONFIG_PACKAGE_${pkg}" "$CONFIG_FILE" || echo "CONFIG_PACKAGE_${pkg}=y" >> "$CONFIG_FILE"
+done
+
 config modem-slot 'wwan'
 	option type 'usb'
 	option slot '8-1'
