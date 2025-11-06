@@ -44,6 +44,34 @@ jobs:
       - name: Prepare
         run: |
           ./prepare.sh
+          
+      - name: Inject small-package feed and add plugins
+        run: |
+          echo "src-git small8 https://github.com/kenzok8/small-package" >> lede/feeds.conf.default
+          cd lede
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          cd ..
+          CONFIG_FILE="xgp.config"
+          [ -f "$CONFIG_FILE" ] || touch "$CONFIG_FILE"
+          for pkg in tailscale luci-app-tailscale luci-i18n-tailscale-zh-cn \
+                     easytier luci-app-easytier luci-i18n-easytier-zh-cn \
+                     lucky luci-app-lucky luci-i18n-lucky-zh-cn; do
+            grep -q "CONFIG_PACKAGE_${pkg}" "$CONFIG_FILE" || echo "CONFIG_PACKAGE_${pkg}=y" >> "$CONFIG_FILE"
+          done
+          # 检查 small-package 源是否含所需插件
+          cd lede
+          MISSING=()
+          for pkg in tailscale easytier lucky; do
+            if ! find feeds/small8 -type f -name "Makefile" | grep -q "$pkg"; then
+              MISSING+=("$pkg")
+            fi
+          done
+          if [ ${#MISSING[@]} -ne 0 ]; then
+            echo "❌ 缺少以下包，请检查 small-package 源： ${MISSING[*]}"
+            exit 1
+          fi
+          cd ..
       - name: Cache OpenWrt dl and toolchain
         uses: actions/cache@v3
         if: always()
