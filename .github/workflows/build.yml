@@ -45,32 +45,32 @@ jobs:
         run: |
           ./prepare.sh
       - name: Inject small-package feed and add plugins
-  run: |
-    cd lede
-    echo ">>> Inject small-package feed"
-    # 如果已存在，不重复添加
-    grep -q "small-package" feeds.conf.default || echo "src-git small8 https://github.com/kenzok8/small-package" >> feeds.conf.default
+        run: |
+          cd lede
+          echo ">>> Inject small-package feed"
+          # 如果已存在，不重复添加
+          grep -q "small-package" feeds.conf.default || echo "src-git small8 https://github.com/kenzok8/small-package" >> feeds.conf.default
 
-    echo ">>> Update and install feeds"
-    ./scripts/feeds clean
-    ./scripts/feeds update -a
-    ./scripts/feeds install -a
-    cd ..
+          echo ">>> Update and install feeds"
+          ./scripts/feeds clean
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          cd ..
 
-    echo ">>> Add plugins to config"
-    CONFIG_FILE="xgp.config"
-    [ -f "$CONFIG_FILE" ] || touch "$CONFIG_FILE"
-    for pkg in tailscale luci-app-tailscale luci-i18n-tailscale-zh-cn \
+          echo ">>> Add plugins to config"
+          CONFIG_FILE="xgp.config"
+          [ -f "$CONFIG_FILE" ] || touch "$CONFIG_FILE"
+          for pkg in tailscale luci-app-tailscale luci-i18n-tailscale-zh-cn \
                easytier luci-app-easytier luci-i18n-easytier-zh-cn \
                lucky luci-app-lucky luci-i18n-lucky-zh-cn; do
       grep -q "CONFIG_PACKAGE_${pkg}" "$CONFIG_FILE" || echo "CONFIG_PACKAGE_${pkg}=y" >> "$CONFIG_FILE"
-    done
+          done
 
-    echo ">>> Verify packages exist"
-    cd lede
-    MISSING=()
-    for pkg in tailscale easytier lucky; do
-      if ! find feeds/small8 -type f -name "Makefile" | grep -q "$pkg"; then
+          echo ">>> Verify packages exist"
+          cd lede
+          MISSING=()
+          for pkg in tailscale easytier lucky; do
+            if ! find feeds/small8 -type f -name "Makefile" | grep -q "$pkg"; then
         MISSING+=("$pkg")
       fi
     done
